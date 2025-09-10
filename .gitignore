@@ -1,3 +1,6 @@
 node_modules
 .env
 
+# ignore dist build folder
+dist/
+
