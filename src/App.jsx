@@ -106,6 +106,8 @@ const App = () => {
             <ChatForm chatHistory={chatHistory} setChatHistory={setChatHistory} generateBotResponse={generateBotResponse}/>
         </div>
       </div>
+      
+      <DebugEnv />  {/* 👈 only for testing */}
 
       <Hero />
 
