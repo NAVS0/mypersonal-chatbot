@@ -19,42 +19,57 @@ const App = () => {
   const chatBodyRef = useRef(null);
 
   const generateBotResponse = async (history) => {
-    // Helper function to update history
-    const updateHistory = (text, isError = false) =>{
-      setChatHistory(prev => [...prev.filter(msg => msg.text !== "Halat lang..."), {role: "model", text, isError}]);
-    } 
-
-    //Format chat history for API request
-    history = history.map(({ role, text }) => ({ role, parts: [{ text }] }));
-
+    // Helper to update history
+    const updateHistory = (text, isError = false) => {
+      setChatHistory(prev => [
+        ...prev.filter(msg => msg.text !== "Halat lang..."),
+        { role: "model", text, isError }
+      ]);
+    };
+  
+    // Format chat history for API request
+    const formattedHistory = history.map(({ role, text }) => ({
+      role,
+      parts: [{ text }]
+    }));
+  
     const requestOptions = {
       method: "POST",
-      headers: {"Content-Type": "application/json" },
-      body: JSON.stringify({contents: history})
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: formattedHistory }),
     };
-
-    try{
+  
+    try {
       const apiUrl = import.meta.env.VITE_API_URL;
       if (!apiUrl) {
-        throw new Error("VITE_API_URL is not set. Configure it in your environment or GitHub Secrets.");
+        throw new Error(
+          "❌ VITE_API_URL is not set. Configure it in your .env or GitHub Secrets."
+        );
       }
-      // Make the API call to get the bot's response
+  
       const response = await fetch(apiUrl, requestOptions);
-      const ct = response.headers.get('content-type') || '';
-      if (!ct.includes('application/json')) {
-        const text = await response.text();
-        throw new Error(`API did not return JSON (${response.status}).`);
+  
+      if (!response.ok) {
+        throw new Error(`API request failed (${response.status})`);
       }
+  
+      const ct = response.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        throw new Error(`API did not return JSON (got ${ct})`);
+      }
+  
       const data = await response.json();
-
-      //Clean and update chat history with bot's response
-      const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
+      const apiResponseText =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text
+          ?.replace(/\*\*(.*?)\*\*/g, "$1")
+          .trim() || "⚠️ No response from API";
+  
       updateHistory(apiResponseText);
-    } catch (error){ 
+    } catch (error) {
       updateHistory(error.message, true);
     }
-
   };
+  
 
   useEffect(() => {
     // Auto-scroll whenever chat history updates
@@ -107,7 +122,6 @@ const App = () => {
         </div>
       </div>
       
-      <DebugEnv />  {/* 👈 only for testing */}
 
       <Hero />
 
