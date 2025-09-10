@@ -56,10 +56,16 @@ const App = () => {
         const getUrl = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}q=${q}`;
         response = await fetch(getUrl, { method: 'GET', headers: { 'Accept': 'application/json' } });
       }
+      if (!response.ok) {
+        let preview = '';
+        try { preview = (await response.text()).slice(0, 300); } catch {}
+        throw new Error(`API error ${response.status} ${response.statusText}${preview ? ` – ${preview}` : ''}`);
+      }
+
       const ct = response.headers.get('content-type') || '';
       if (!ct.includes('application/json')) {
         const text = await response.text();
-        throw new Error(`API did not return JSON (${response.status}).`);
+        throw new Error(`API did not return JSON (got: ${ct || 'unknown'}) – ${text.slice(0, 300)}`);
       }
       const data = await response.json();
 
