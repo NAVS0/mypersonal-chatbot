@@ -34,8 +34,13 @@ const App = () => {
     };
 
     try{
+      // Ensure API URL is configured
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        throw new Error("VITE_API_URL is not set. Configure it in your environment or GitHub Secrets.");
+      }
       // Make the API call to get the bot's response
-      const response = await fetch(import.meta.env.VITE_API_URL, requestOptions);
+      const response = await fetch(apiUrl, requestOptions);
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error?.message || "Something went wrong!");
 
