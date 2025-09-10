@@ -4,14 +4,12 @@ on:
     workflow_dispatch:
     push:
         branches:
-            - main
+            -main
 
 
 jobs:
     build-deploy:
         runs-on: macos-15
-        env:
-            VITE_API_URL: ${{ secrets.VITE_API_URL }}
         
         steps:
             # Checkout the repository
@@ -28,7 +26,7 @@ jobs:
             - name: Install Dependecies
               run: npm install
 
-            # Build the project (env injected at job level above)
+            # Build the project
             - name: Build project
               run: npm run build
             
