@@ -25,12 +25,19 @@ const App = () => {
     } 
 
     //Format chat history for API request
-    history = history.map(({ role, text }) => ({ role, parts: [{ text }] }));
+    const formatted = history.map(({ role, text }) => ({ role, parts: [{ text }] }));
 
+    // Resolve API config
+    const apiMethod = (import.meta.env.VITE_API_METHOD || 'POST').toUpperCase();
+
+    // Build request options dynamically
     const requestOptions = {
-      method: "POST",
-      headers: {"Content-Type": "application/json" },
-      body: JSON.stringify({contents: history})
+      method: apiMethod,
+      headers: {
+        'Accept': 'application/json',
+        ...(apiMethod !== 'GET' ? { 'Content-Type': 'application/json' } : {})
+      },
+      ...(apiMethod !== 'GET' ? { body: JSON.stringify({ contents: formatted }) } : {})
     };
 
     try{
@@ -39,7 +46,21 @@ const App = () => {
         throw new Error("VITE_API_URL is not set. Configure it in your environment or GitHub Secrets.");
       }
       // Make the API call to get the bot's response
-      const response = await fetch(apiUrl, requestOptions);
+      let url = apiUrl;
+      if (apiMethod === 'GET') {
+        // Send minimal payload in query for GET-only endpoints
+        const q = encodeURIComponent(formatted.map(m => `${m.role}: ${m.parts[0].text}`).join('\n'));
+        url = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}q=${q}`;
+      }
+
+      let response = await fetch(url, requestOptions);
+
+      // If server rejects POST with 405, retry GET as a fallback
+      if (response.status === 405 && apiMethod === 'POST') {
+        const q = encodeURIComponent(formatted.map(m => `${m.role}: ${m.parts[0].text}`).join('\n'));
+        const fallbackUrl = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}q=${q}`;
+        response = await fetch(fallbackUrl, { method: 'GET', headers: { 'Accept': 'application/json' } });
+      }
       const ct = response.headers.get('content-type') || '';
       if (!ct.includes('application/json')) {
         const text = await response.text();
