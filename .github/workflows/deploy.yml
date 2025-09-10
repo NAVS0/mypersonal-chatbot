@@ -28,10 +28,8 @@ jobs:
             - name: Install Dependecies
               run: npm install
 
-            # Build the project (inject Vite env vars from Secrets)
+            # Build the project (env injected at job level above)
             - name: Build project
-              env:
-                VITE_API_URL: ${{ secrets.VITE_API_URL }}
               run: npm run build
             
             # Deploy to github pages
