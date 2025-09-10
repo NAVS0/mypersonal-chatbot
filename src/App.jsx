@@ -34,10 +34,18 @@ const App = () => {
     };
 
     try{
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        throw new Error("VITE_API_URL is not set. Configure it in your environment or GitHub Secrets.");
+      }
       // Make the API call to get the bot's response
-      const response = await fetch(import.meta.env.VITE_API_URL, requestOptions);
+      const response = await fetch(apiUrl, requestOptions);
+      const ct = response.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`API did not return JSON (${response.status}).`);
+      }
       const data = await response.json();
-      if (!response.ok) throw new Error(data?.error?.message || "Something went wrong!");
 
       //Clean and update chat history with bot's response
       const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
