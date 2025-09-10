@@ -1,6 +1,14 @@
-node_modules
-.env
+# dependencies
+node_modules/
 
-# ignore dist build folder
+# environment variables
+.env
+.env.local
+.env.*.local
+
+# build output
 dist/
 
+# editor / system files
+.DS_Store
+.vscode/
