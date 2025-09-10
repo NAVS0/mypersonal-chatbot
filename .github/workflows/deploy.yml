@@ -11,8 +11,6 @@ jobs:
     build-deploy:
         runs-on: macos-15
         
-        VITE_API_URL: ${{ secrets.VITE_API_URL }}
-        
         steps:
             # Checkout the repository
             - name: Checkout code
