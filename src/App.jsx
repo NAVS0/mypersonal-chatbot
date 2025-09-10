@@ -27,10 +27,14 @@ const App = () => {
     //Format chat history for API request
     history = history.map(({ role, text }) => ({ role, parts: [{ text }] }));
 
+    const apiMethod = (import.meta.env.VITE_API_METHOD || 'POST').toUpperCase();
     const requestOptions = {
-      method: "POST",
-      headers: {"Content-Type": "application/json" },
-      body: JSON.stringify({contents: history})
+      method: apiMethod,
+      headers: {
+        'Accept': 'application/json',
+        ...(apiMethod !== 'GET' ? { 'Content-Type': 'application/json' } : {})
+      },
+      ...(apiMethod !== 'GET' ? { body: JSON.stringify({ contents: history }) } : {})
     };
 
     try{
@@ -38,8 +42,20 @@ const App = () => {
       if (!apiUrl) {
         throw new Error("VITE_API_URL is not set. Configure it in your environment or GitHub Secrets.");
       }
-      // Make the API call to get the bot's response
-      const response = await fetch(apiUrl, requestOptions);
+      // Make the API call to get the bot's response (with GET fallback for 405)
+      let url = apiUrl;
+      if (apiMethod === 'GET') {
+        const q = encodeURIComponent(history.map(m => `${m.role}: ${m.parts[0].text}`).join('\n'));
+        url = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}q=${q}`;
+      }
+
+      let response = await fetch(url, requestOptions);
+
+      if (response.status === 405 && apiMethod === 'POST') {
+        const q = encodeURIComponent(history.map(m => `${m.role}: ${m.parts[0].text}`).join('\n'));
+        const getUrl = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}q=${q}`;
+        response = await fetch(getUrl, { method: 'GET', headers: { 'Accept': 'application/json' } });
+      }
       const ct = response.headers.get('content-type') || '';
       if (!ct.includes('application/json')) {
         const text = await response.text();
