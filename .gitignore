@@ -12,3 +12,5 @@ dist/
 # editor / system files
 .DS_Store
 .vscode/
+
+VITE_API_URL
