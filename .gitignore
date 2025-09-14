@@ -1,16 +1,26 @@
-# dependencies
-node_modules/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# environment variables
 .env
-.env.local
-.env.*.local
 
-# build output
-dist/
+node_modules
+dist
+dist-ssr
+*.local
 
-# editor / system files
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-.vscode/
-
-VITE_API_URL
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
