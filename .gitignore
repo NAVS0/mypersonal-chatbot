@@ -11,6 +11,10 @@ lerna-debug.log*
 
 node_modules
 dist/
+dist/assets/
+dist/assets/index-CdafOuSh.css
+dist/assets/index-CdafOuSh.css.map
+dist/assets/index-CdafOuSh.css.map
 dist-ssr
 *.local
 
